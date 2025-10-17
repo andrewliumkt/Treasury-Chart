@@ -17,6 +17,18 @@ git config user.email >/dev/null 2>&1 || git config user.email "andrew@mktadviso
 
 git pull
 
+# Sanity checks so we fail clearly (instead of rsync warnings)
+if [ ! -d "$EXPORT_DIR" ]; then
+  echo "❌ Export dir not found: $EXPORT_DIR"
+  echo "Run your R script first, then rerun this deploy."
+  exit 1
+fi
+if [ ! -f "$EXPORT_DIR/index.html" ]; then
+  echo "❌ $EXPORT_DIR/index.html not found."
+  echo "Make sure make_treasury_html() wrote index.html into $EXPORT_DIR, then rerun."
+  exit 1
+fi
+
 # Copy PNGs into slides/ (overwrite + remove old extras)
 mkdir -p "$SITE_SLIDES_DIR"
 rsync -av --delete \
@@ -31,6 +43,9 @@ perl -pi -e 's#"\./#\"slides/#g' "$SITE_HTML_FILE"
 
 # 2) Add cache-buster so GitHub Pages + browser always use latest images
 perl -pi -e "s#(slides/[^\"']+\\.png)#\\1?v=$(date +%s)#g" "$SITE_HTML_FILE"
+
+# 3) Force HTML itself to change every deploy (bust CDN)
+echo "<!-- deploy $(date +%s) -->" >> "$SITE_HTML_FILE"
 
 # Commit & push
 git add -A

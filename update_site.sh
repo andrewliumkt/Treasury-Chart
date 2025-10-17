@@ -26,6 +26,12 @@ rsync -av --delete \
 # Copy the HTML into repo root
 cp "$EXPORT_DIR/index.html" "$SITE_HTML_FILE"
 
+# 1) Fix paths so HTML looks for images in slides/ (not ./)
+perl -pi -e 's#"\./#\"slides/#g' "$SITE_HTML_FILE"
+
+# 2) Add cache-buster so GitHub Pages + browser always use latest images
+perl -pi -e "s#(slides/[^\"']+\\.png)#\\1?v=$(date +%s)#g" "$SITE_HTML_FILE"
+
 # Commit & push
 git add -A
 git commit -m "Update slides $(date +%F)" || echo "No changes to commit"

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Always run from the repo root (the folder this script lives in)
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Where your fresh files live:
 EXPORT_DIR="/Users/andrewliu/Documents/MKT_Chart/treasury_slides"
 
 # Where they go in the repo:
 SITE_SLIDES_DIR="slides"
 SITE_HTML_FILE="index.html"
+
+# Make sure git user is set (harmless if already set)
+git config user.name >/dev/null 2>&1 || git config user.name "Andrew Liu"
+git config user.email >/dev/null 2>&1 || git config user.email "andrew@mktadvisorsllc.com"
 
 git pull
 
